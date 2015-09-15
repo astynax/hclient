@@ -1,0 +1,18 @@
+name:                hclient
+version:             0.1.0.0
+description:         Please see README.md
+homepage:            http://github.com/astynax/hclient#readme
+license:             BSD3
+license-file:        LICENSE
+author:              astynax
+copyright:           2015 astynax
+category:            Web
+build-type:          Simple
+cabal-version:       >=1.10
+
+executable hclient
+  hs-source-dirs:      src
+  main-is:             Main.hs
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5,
+                       uni-htk

@@ -1,0 +1,10 @@
+flags: {}
+packages:
+    - '.'
+extra-deps:
+    - uni-htk-2.2.1.2
+    - uni-events-2.2.2.0
+    - uni-posixutil-2.2.1.1
+    - uni-reactor-2.2.1.0
+    - uni-util-2.3.0.1
+resolver: lts-3.2
