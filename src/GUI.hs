@@ -10,7 +10,7 @@ import           HTk.Toplevel.HTk
 import           Types
 
 
-runGUI :: String -> Maybe String -> UI IO a
+runGUI :: String -> Maybe String -> UI a
 runGUI title intro initialState ctl = do
   main <- initHTk [ text title
                   , minSize (300, 150)]

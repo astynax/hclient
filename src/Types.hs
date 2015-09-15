@@ -4,6 +4,9 @@ module Types where
 data Output = Output { writeTo     :: String -> IO ()
                      , clearOutput :: IO () }
 
+type UI a = a -> Controller IO a -> IO ()
+
+
 data Action = Write String
             | Clear
             | Quit
@@ -23,8 +26,6 @@ newtype Monad m => Controller m a =
                   -> Input         -- current input
                   -> m (Result a)  -- result
              }
-
-type UI m a = a -> Controller m a -> m ()
 
 
 quit, clear :: Monad m => m (Result a)
