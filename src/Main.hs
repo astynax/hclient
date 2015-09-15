@@ -1,7 +1,7 @@
 module Main where
 
-import Types
-import GUI
+import           GUI
+import           Types
 
 
 main :: IO ()

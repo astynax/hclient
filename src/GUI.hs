@@ -2,16 +2,17 @@
 
 module GUI (runGUI) where
 
-import Control.Monad (forM_, void)
-import Data.IORef (newIORef, readIORef, writeIORef)
-import HTk.Toplevel.HTk
+import           Control.Monad    (void)
+import           Data.Foldable    (forM_)
+import           Data.IORef       (newIORef, readIORef, writeIORef)
+import           HTk.Toplevel.HTk
 
-import Types
+import           Types
 
 
-runGUI :: Maybe String -> UI a
-runGUI intro initialState process = do
-  tk <- initHTk [ text "Dict"
+runGUI :: String -> Maybe String -> UI a
+runGUI title intro initialState process = do
+  tk <- initHTk [ text title
                 , minSize (300, 150)]
 
   refState <- newIORef initialState
@@ -35,14 +36,14 @@ runGUI intro initialState process = do
       cmd <- getValue entry :: IO String
       st <- readIORef refState
       (st', mbEntry, actions) <- process st cmd
-      whenJust mbEntry (void . (entry #) . value)
+      forM_ mbEntry (void . (entry #) . value)
       forM_ actions $ \case
         Write msg -> write out msg
         Clear     -> clear out
         Quit      -> destroy tk
       writeIORef refState st'
 
-  whenJust intro (write out)
+  forM_ intro (write out)
 
   setFocus entry
 
@@ -75,7 +76,3 @@ enabling w action = void $
   configure w [enable]
   >> action
   >> configure w [disable]
-
-
-whenJust :: Maybe a -> (a -> IO ()) -> IO ()
-whenJust = flip (maybe (return ()))
