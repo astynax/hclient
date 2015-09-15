@@ -5,7 +5,7 @@ import           Types
 
 
 main :: IO ()
-main = runGUI (Just "Echo service ready!\n\n") (1 :: Int) echo
+main = runGUI "echo" (Just "Echo service ready!\n\n") (1 :: Int) echo
 
 
 echo :: (Show a, Num a) => Controller a
