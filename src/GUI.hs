@@ -10,11 +10,11 @@ import           HTk.Toplevel.HTk
 import           Types
 
 
-runGUI :: String -> Maybe String -> UI a
-runGUI title intro initialState process = do
+runGUI :: String -> Maybe String -> UI IO a
+runGUI title intro initialState ctl = do
   main <- initHTk [ text title
                   , minSize (300, 150)]
-  let quit = destroy main
+  let exit = destroy main
 
   refState <- newIORef initialState
 
@@ -30,24 +30,24 @@ runGUI title intro initialState process = do
 
   void $ spawnEvent $ forever
 
-    $  onCtrlD  >>> quit
+    $  onCtrlD  >>> exit
 
     +> onReturn >>> do
       cmd <- getValue entry :: IO String
 
       oldState <- readIORef refState
-      (newState, mbEntry, actions) <- process oldState cmd
+      Result mbNewState mbEntry actions <- runController ctl oldState cmd
 
       forM_ mbEntry (void . (entry #) . value)
 
       forM_ actions $ \case
-        Write msg -> write out msg
-        Clear     -> clear out
-        Quit      -> quit
+        Write msg -> writeTo out msg
+        Clear     -> clearOutput out
+        Quit      -> exit
 
-      writeIORef refState newState
+      forM_ mbNewState (writeIORef refState)
 
-  forM_ intro (write out)
+  forM_ intro (writeTo out)
 
   setFocus entry
 
@@ -72,11 +72,11 @@ runGUI title intro initialState process = do
               , Fill Y ]
 
       return ( frame
-             , Output { write = enabling ed
-                                . appendText ed
-                      , clear = enabling ed
-                                $ deleteTextRange ed
-                                ((0, 0) :: Position) EndOfText
+             , Output { writeTo = enabling ed
+                                  . appendText ed
+                      , clearOutput = enabling ed
+                                      $ deleteTextRange ed
+                                      ((0, 0) :: Position) EndOfText
                       })
 
 

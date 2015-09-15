@@ -5,13 +5,20 @@ import           Types
 
 
 main :: IO ()
-main = runGUI "echo" (Just "Echo service is ready!\n\n") (1 :: Int) echo
+main = runGUI "echo" (Just "Echo service is ready!\n\n") 1 echo
 
 
-echo :: (Show a, Num a) => Controller a
-echo state msg =
-  let (update, action) = case msg of
-        ":q" -> (id,      Quit)
-        ":r" -> (const 1, Clear)
-        _    -> ((+ 1),   Write $ show state ++ ": " ++ msg ++ "\n")
-  in  return (update state, Just "", [action])
+echo :: (Monad m) => Controller m Int
+echo = Controller $ \cnt msg ->
+  case msg of
+    ""   -> return $ write
+            $ unlines [ "Use:"
+                      , " :q    - to quit (Ctrl+D works same way)"
+                      , " :r    - to reset state"
+                      , " <msg> - to see an echo" ]
+    ":q" -> quit
+    ":r" -> clear
+    _    -> return
+            $ withState (cnt + 1)
+            $ consuming
+            $ write $ show cnt ++ ": " ++ msg ++ "\n"
