@@ -12,36 +12,40 @@ import           Types
 
 runGUI :: String -> Maybe String -> UI a
 runGUI title intro initialState process = do
-  tk <- initHTk [ text title
-                , minSize (300, 150)]
+  main <- initHTk [ text title
+                  , minSize (300, 150)]
+  let quit = destroy main
 
   refState <- newIORef initialState
 
-  entry <- newEntry tk [] :: IO (Entry String)
-  (outFrame, out) <- newOutput tk
-
-  (escaped, _) <- bind entry
-                  [WishEvent [Control] $ KeyPress $ Just $ KeySym "d"]
-
-  (entered, _) <- bindSimple entry
-                  $ KeyPress $ Just $ KeySym "Return"
+  entry           <- newEntry main [] :: IO (Entry String)
+  (outFrame, out) <- newOutput main
 
   pack entry    [ Fill X ]
   pack outFrame [ Fill Both
                 , Expand On ]
 
+  onCtrlD  <- hotkey entry [Control] "d"
+  onReturn <- hotkey entry []        "Return"
+
   void $ spawnEvent $ forever
-    $  escaped >>> destroy tk
-    +> entered >>> do
+
+    $  onCtrlD  >>> quit
+
+    +> onReturn >>> do
       cmd <- getValue entry :: IO String
-      st <- readIORef refState
-      (st', mbEntry, actions) <- process st cmd
+
+      oldState <- readIORef refState
+      (newState, mbEntry, actions) <- process oldState cmd
+
       forM_ mbEntry (void . (entry #) . value)
+
       forM_ actions $ \case
         Write msg -> write out msg
         Clear     -> clear out
-        Quit      -> destroy tk
-      writeIORef refState st'
+        Quit      -> quit
+
+      writeIORef refState newState
 
   forM_ intro (write out)
 
@@ -50,27 +54,33 @@ runGUI title intro initialState process = do
   finishHTk
 
   where
+    hotkey w mods key =
+      fst <$> bind w [WishEvent mods $ KeyPress $ Just $ KeySym key]
+
     newOutput :: Container a => a -> IO (Frame, Output)
     newOutput cont = do
-      f  <- newFrame     cont []
-      sb <- newScrollBar f    []
-      ed <- newEditor    f    [ scrollbar Vertical sb
-                              , wrap WordWrap
-                              , width 10
-                              , disable ]
+      frame  <- newFrame     cont  []
+      sb     <- newScrollBar frame []
+      ed     <- newEditor    frame [ scrollbar Vertical sb
+                                   , wrap WordWrap
+                                   , width 10
+                                   , disable ]
       pack ed [ Side AtLeft
               , Fill Both
               , Expand On ]
       pack sb [ Side AtRight
               , Fill Y ]
-      return (f, Output { write = enabling ed
-                                  . appendText ed
-                        , clear = enabling ed
-                                  $ deleteTextRange ed
-                                  ((0, 0) :: Position) EndOfText
-                        })
+
+      return ( frame
+             , Output { write = enabling ed
+                                . appendText ed
+                      , clear = enabling ed
+                                $ deleteTextRange ed
+                                ((0, 0) :: Position) EndOfText
+                      })
 
 
+-- | Temporarily enables the widget until the completion of action
 enabling :: HasEnable a => a -> IO b -> IO ()
 enabling w action = void $
   configure w [enable]
