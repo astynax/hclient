@@ -25,6 +25,7 @@ echo = Controller $ \cnt msg -> return $
   where
     showHelp = write
                $ unlines [ "Use:"
+                         , " \":?\" to show this help"
                          , " \":q\" to quit (Ctrl+D works same way)"
                          , " \":r\" to reset state"
                          , " <msg> to see an echo" ]
