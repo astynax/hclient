@@ -1,4 +1,12 @@
-module Types where
+module Types (
+  Output(..), Input, UI
+  , Action(..), Controller(..), Result
+  , (<>)
+  , quit, clear, setInput, setState
+  , write, writeLn
+  ) where
+
+import           Data.Monoid ((<>))
 
 
 data Output = Output { writeTo     :: String -> IO ()
@@ -7,17 +15,15 @@ data Output = Output { writeTo     :: String -> IO ()
 type UI a = a -> Controller IO a -> IO ()
 
 
-data Action = Write String
-            | Clear
-            | Quit
+data Action a = Write String
+              | ClearOutput
+              | SetInput String
+              | SetState a
+              | Quit
 
 type Input = String
 
-data Result a =
-  Result
-  (Maybe a)      -- new state, if changed
-  (Maybe Input)  -- new value for cmdline. Wouldn't change if Nothing
-  [Action]       -- list of actions to apply to output
+type Result a = [Action a]
 
 
 newtype Monad m => Controller m a =
@@ -27,16 +33,14 @@ newtype Monad m => Controller m a =
                   -> m (Result a)  -- result
              }
 
+quit, clear :: Result a
+quit     = [Quit]
+clear    = [ClearOutput]
 
-quit, clear :: Monad m => m (Result a)
-quit  = return $ Result Nothing Nothing [Quit]
-clear = return $ Result Nothing Nothing [Clear]
+write, writeLn, setInput :: String -> Result a
+write    = (:[]) . Write
+writeLn  = (:[]) . Write . (++ "\n")
+setInput = (:[]) . SetInput
 
-consuming :: Result a -> Result a
-consuming (Result s _ as) = Result s (Just "") as
-
-withState :: a -> Result a -> Result a
-withState s (Result _ i as) = Result (Just s) i as
-
-write :: String -> Result a
-write s = Result Nothing Nothing [Write s]
+setState :: a -> Result a
+setState = (:[]) . SetState

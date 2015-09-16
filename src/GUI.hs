@@ -3,15 +3,14 @@
 module GUI (runGUI) where
 
 import           Control.Monad    (void)
-import           Data.Foldable    (forM_)
 import           Data.IORef       (newIORef, readIORef, writeIORef)
 import           HTk.Toplevel.HTk
 
 import           Types
 
 
-runGUI :: String -> Maybe String -> UI a
-runGUI title intro initialState ctl = do
+runGUI :: String -> [Action a] -> UI a
+runGUI title setup initialState ctl = do
   main <- initHTk [ text title
                   , minSize (300, 150)]
   let exit = destroy main
@@ -25,6 +24,13 @@ runGUI title intro initialState ctl = do
   pack outFrame [ Fill Both
                 , Expand On ]
 
+  let perform = mapM_ $ \case
+        Write msg   -> writeTo out msg
+        ClearOutput -> clearOutput out
+        SetInput i  -> void $ entry # value i
+        SetState s  -> writeIORef refState s
+        Quit        -> exit
+
   onCtrlD  <- hotkey entry [Control] "d"
   onReturn <- hotkey entry []        "Return"
 
@@ -36,18 +42,11 @@ runGUI title intro initialState ctl = do
       cmd <- getValue entry :: IO String
 
       oldState <- readIORef refState
-      Result mbNewState mbEntry actions <- runController ctl oldState cmd
+      actions <- runController ctl oldState cmd
 
-      forM_ mbEntry (void . (entry #) . value)
+      perform actions
 
-      forM_ actions $ \case
-        Write msg -> writeTo out msg
-        Clear     -> clearOutput out
-        Quit      -> exit
-
-      forM_ mbNewState (writeIORef refState)
-
-  forM_ intro (writeTo out)
+  perform setup
 
   setFocus entry
 
