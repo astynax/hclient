@@ -8,3 +8,5 @@ extra-deps:
     - uni-reactor-2.2.1.0
     - uni-util-2.3.0.1
 resolver: lts-3.2
+ghc-options:
+    "hclient": -static -optl-static -optl-pthread
