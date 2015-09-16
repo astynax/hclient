@@ -4,7 +4,8 @@ module GUI (runGUI) where
 
 import           Control.Monad    (void)
 import           Data.IORef       (newIORef, readIORef, writeIORef)
-import           HTk.Toplevel.HTk
+import           HTk.Toplevel.HTk hiding (EndOfText)
+import qualified HTk.Toplevel.HTk as H
 
 import           Types
 
@@ -12,7 +13,7 @@ import           Types
 runGUI :: String -> [Action a] -> UI a
 runGUI title setup initialState ctl = do
   main <- initHTk [ text title
-                  , minSize (300, 150)]
+                  , minSize (300, 100) ]
   let exit = destroy main
 
   refState <- newIORef initialState
@@ -29,6 +30,7 @@ runGUI title setup initialState ctl = do
         ClearOutput -> clearOutput out
         SetInput i  -> void $ entry # value i
         SetState s  -> writeIORef refState s
+        ScrollTo t  -> out `scrollTo` t
         Quit        -> exit
 
   onCtrlD  <- hotkey entry [Control] "d"
@@ -75,7 +77,11 @@ runGUI title setup initialState ctl = do
                                   . appendText ed
                       , clearOutput = enabling ed
                                       $ deleteTextRange ed
-                                      ((0, 0) :: Position) EndOfText
+                                      ((0, 0) :: Position) H.EndOfText
+                      , scrollTo = moveto Vertical ed
+                                   . \case
+                                     BeginOfText -> 0
+                                     EndOfText   -> 1
                       })
 
 

@@ -1,24 +1,28 @@
 module Types (
   Output(..), Input, UI
-  , Action(..), Controller(..), Result
+  , Action(..), Controller(..), Result, ScrollTarget(..)
   , (<>)
   , quit, clear, setInput, setState
   , write, writeLn
+  , scrollToBegin, scrollToEnd
   ) where
 
 import           Data.Monoid ((<>))
 
 
 data Output = Output { writeTo     :: String -> IO ()
-                     , clearOutput :: IO () }
+                     , clearOutput :: IO ()
+                     , scrollTo    :: ScrollTarget -> IO () }
 
 type UI a = a -> Controller IO a -> IO ()
 
+data ScrollTarget = BeginOfText | EndOfText
 
 data Action a = Write String
               | ClearOutput
               | SetInput String
               | SetState a
+              | ScrollTo ScrollTarget
               | Quit
 
 type Input = String
@@ -44,3 +48,7 @@ setInput = (:[]) . SetInput
 
 setState :: a -> Result a
 setState = (:[]) . SetState
+
+scrollToBegin, scrollToEnd :: Result a
+scrollToBegin = [ScrollTo BeginOfText]
+scrollToEnd   = [ScrollTo EndOfText]
