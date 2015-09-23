@@ -14,7 +14,7 @@ data Output = Output { writeTo     :: String -> IO ()
                      , clearOutput :: IO ()
                      , scrollTo    :: ScrollTarget -> IO () }
 
-type UI a = a -> Controller IO a -> IO ()
+type UI a = Controller IO a -> IO ()
 
 data ScrollTarget = BeginOfText | EndOfText
 
@@ -30,11 +30,12 @@ type Input = String
 type Result a = [Action a]
 
 
-newtype Monad m => Controller m a =
-  Controller { runController ::
-                  a                -- previous state
-                  -> Input         -- current input
-                  -> m (Result a)  -- result
+data Monad m => Controller m a =
+  Controller { initialize  :: m a
+             , finalize    :: a -> m ()
+             , communicate :: a             -- previous state
+                           -> Input         -- current input
+                           -> m (Result a)  -- result
              }
 
 quit, clear :: Result a

@@ -15,16 +15,21 @@ type Template = String -> String
 
 
 main :: IO ()
-main = cli >>= runGUI "hCLIent" [] () . controller
+main = cli >>= runGUI "hCLIent" [] . controller
 
 
 controller :: Template -> Controller IO ()
-controller format = Controller $ \_ input -> do
-  (code, out, err) <- readCreateProcessWithExitCode (shell $ format input) []
-  let msg = if code == ExitSuccess
-            then out
-            else err
-  return $ clear <> write msg <> scrollToBegin
+controller format =
+  Controller { initialize  = return ()
+             , finalize    = const $ return ()
+             , communicate = \_ input -> do
+                  (code, out, err) <- readCreateProcessWithExitCode
+                                      (shell $ format input) []
+                  let msg = if code == ExitSuccess
+                            then out
+                            else err
+                  return $ clear <> write msg <> scrollToBegin
+             }
 
 
 cli :: IO Template

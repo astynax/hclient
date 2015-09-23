@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Main where
 
 import           GUI
@@ -5,24 +7,27 @@ import           Types
 
 
 main :: IO ()
-main = runGUI "echo" (writeLn "Echo service is ready!\n") 1 echo
+main = runGUI "echo" (writeLn "Echo service is ready!\n") echo
 
 
 echo :: (Monad m) => Controller m Int
-echo = Controller $ \cnt msg -> return $
-  case msg of
-    ""   -> showHelp
-
-    ":?" -> showHelp
-
-    ":q" -> quit
-
-    ":r" -> clear <> clearInput
-
-    _    -> setState (cnt + 1)
-            <> clearInput
-            <> write (show cnt ++ ": " ++ msg ++ "\n")
+echo = Controller { initialize  = return 1
+                  , finalize    = const $ return ()
+                  , communicate = (return .) . communicate' }
   where
+    communicate' cnt = \case
+      ""   -> showHelp
+
+      ":?" -> showHelp
+
+      ":q" -> quit
+
+      ":r" -> clear <> clearInput
+
+      msg  -> setState (cnt + 1)
+              <> clearInput
+              <> write (show cnt ++ ": " ++ msg ++ "\n")
+
     showHelp = write
                $ unlines [ "Use:"
                          , " \":?\" to show this help"

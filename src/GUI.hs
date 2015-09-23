@@ -11,12 +11,13 @@ import           Types
 
 
 runGUI :: String -> [Action a] -> UI a
-runGUI title setup initialState ctl = do
+runGUI title setup ctl = do
   main <- initHTk [ text title
                   , minSize (300, 100) ]
-  let exit = destroy main
 
-  refState <- newIORef initialState
+  refState <- newIORef =<< initialize ctl
+
+  let exit = readIORef refState >>= finalize ctl >> destroy main
 
   entry           <- newEntry main [] :: IO (Entry String)
   (outFrame, out) <- newOutput main
@@ -44,7 +45,7 @@ runGUI title setup initialState ctl = do
       cmd <- getValue entry :: IO String
 
       oldState <- readIORef refState
-      actions <- runController ctl oldState cmd
+      actions <- communicate ctl oldState cmd
 
       perform actions
 
