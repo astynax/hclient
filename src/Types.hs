@@ -10,9 +10,9 @@ module Types (
 import           Data.Monoid ((<>))
 
 
-data Output = Output { writeTo     :: String -> IO ()
-                     , clearOutput :: IO ()
-                     , scrollTo    :: ScrollTarget -> IO () }
+data Output t = Output { writeTo     :: String -> t
+                       , clearOutput :: t
+                       , scrollTo    :: ScrollTarget -> t }
 
 type UI a = Controller IO a -> IO ()
 

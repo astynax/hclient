@@ -59,7 +59,7 @@ runGUI title setup ctl = do
     hotkey w mods key =
       fst <$> bind w [WishEvent mods $ KeyPress $ Just $ KeySym key]
 
-    newOutput :: Container a => a -> IO (Frame, Output)
+    newOutput :: Container a => a -> IO (Frame, Output (IO ()))
     newOutput cont = do
       frame  <- newFrame     cont  []
       sb     <- newScrollBar frame []
