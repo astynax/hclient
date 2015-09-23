@@ -2,12 +2,12 @@
 
 module Main where
 
-import           GUI
+import           TUI  -- GUI
 import           Types
 
 
 main :: IO ()
-main = runGUI "echo" (writeLn "Echo service is ready!\n") echo
+main = runTUI (writeLn "Echo service is ready!") echo
 
 
 echo :: (Monad m) => Controller m Int
@@ -26,7 +26,7 @@ echo = Controller { initialize  = return 1
 
       msg  -> setState (cnt + 1)
               <> clearInput
-              <> write (show cnt ++ ": " ++ msg ++ "\n")
+              <> write (show cnt ++ ": " ++ msg)
 
     showHelp = write
                $ unlines [ "Use:"

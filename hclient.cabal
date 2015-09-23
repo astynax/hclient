@@ -13,7 +13,7 @@ cabal-version:       >=1.10
 executable hecho
   hs-source-dirs:      src
   main-is:             Echo.hs
-  other-modules:       Types, GUI
+  other-modules:       Types, TUI
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5,
                        uni-htk
