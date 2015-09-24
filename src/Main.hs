@@ -5,8 +5,8 @@ import           Options.Applicative
 import           System.Process      (readCreateProcessWithExitCode, shell)
 import           System.Exit         (ExitCode(ExitSuccess))
 
+import           Core
 import           GUI
-import           Types
 
 
 data Config = Config String String
