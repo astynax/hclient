@@ -2,8 +2,8 @@
 
 module Main where
 
+import           Core
 import           TUI  -- GUI
-import           Types
 
 
 main :: IO ()
@@ -26,7 +26,9 @@ echo = Controller { initialize  = return 1
 
       msg  -> setState (cnt + 1)
               <> clearInput
-              <> write (show cnt ++ ": " ++ msg)
+              <> write (show cnt)
+              <> write ": "
+              <> writeLn msg
 
     showHelp = write
                $ unlines [ "Use:"

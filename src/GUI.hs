@@ -7,7 +7,7 @@ import           Data.IORef       (newIORef, readIORef, writeIORef)
 import           HTk.Toplevel.HTk hiding (EndOfText)
 import qualified HTk.Toplevel.HTk as H
 
-import           Types
+import           Core
 
 
 runGUI :: String -> [Action a] -> UI a
