@@ -5,9 +5,9 @@ module Core (
   , quit, clear, setInput, setState
   , write, writeLn
   , scrollToBegin, scrollToEnd
-  , State(), state, perform, finish, isFinished
+  , State(finished, ctlState, uiState, uiInput)
+  , state, perform, finish
   , modUIState, modCtlState
-  , getUIInput, getUIState, getCtlState
   ) where
 
 import           Data.Monoid ((<>))
@@ -93,18 +93,6 @@ modUIState f s = s { uiState = f (uiState s) }
 
 modCtlState :: (b -> b) -> State a b -> State a b
 modCtlState f s = s { ctlState = f (ctlState s) }
-
-getUIInput :: State a b -> Maybe String
-getUIInput = uiInput
-
-getUIState :: State a b -> a
-getUIState = uiState
-
-getCtlState :: State a b -> b
-getCtlState = ctlState
-
-isFinished :: State a b -> Bool
-isFinished = finished
 
 finish :: State a b -> State a b
 finish s = s { finished = True }

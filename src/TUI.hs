@@ -23,10 +23,10 @@ runTUI setup ctl =
   loop . perform tuiOutput setup . state "" =<< initialize ctl
   where
     loop s
-      | isFinished s = finalize ctl (getCtlState s)
-                       >> putStrLn "\nBye!"
+      | finished s = finalize ctl (ctlState s)
+                     >> putStrLn "\nBye!"
       | otherwise = do
-        putStr (getUIState s)
+        putStr (uiState s)
 
         let s' = modUIState (const []) s
 
@@ -35,7 +35,7 @@ runTUI setup ctl =
         loop =<< maybe
           (return $ finish s')
           (\input -> do
-              actions <- communicate ctl (getCtlState s') input
+              actions <- communicate ctl (ctlState s') input
               return $ perform tuiOutput actions s'
           )
           mbInput
