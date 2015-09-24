@@ -7,7 +7,7 @@ import           Data.IORef       (newIORef, readIORef, writeIORef)
 import           HTk.Toplevel.HTk hiding (EndOfText)
 import qualified HTk.Toplevel.HTk as H
 
-import           Core
+import           Core             hiding (perform)
 
 
 runGUI :: String -> [Action a] -> UI a
@@ -29,9 +29,9 @@ runGUI title setup ctl = do
   let perform = mapM_ $ \case
         Write msg   -> writeTo out msg
         ClearOutput -> clearOutput out
-        SetInput i  -> void $ entry # value i
-        SetState s  -> writeIORef refState s
         ScrollTo t  -> out `scrollTo` t
+        SetState s  -> writeIORef refState s
+        SetInput i  -> void $ entry # value i
         Quit        -> exit
 
   onCtrlD  <- hotkey entry [Control] "d"
