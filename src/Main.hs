@@ -7,15 +7,16 @@ import           System.Exit         (ExitCode(ExitSuccess))
 
 import           Core
 import           GUI
+import           TUI
 
 
-data Config = Config String String
+data Config = Config Bool String String
 
 type Template = String -> String
 
 
 main :: IO ()
-main = cli >>= runGUI "hCLIent" [] . controller
+main = cli >>= \(ui, tpl) -> ui [] (controller tpl)
 
 
 controller :: Template -> Controller IO ()
@@ -32,13 +33,21 @@ controller format =
              }
 
 
-cli :: IO Template
+cli :: IO ([Action ()] -> UI (), Template)
 cli = do
-  Config repl cmdLine <- execParser options
+  Config useTUI repl cmdLine <- execParser options
 
-  return $ if null repl
-           then \x -> cmdLine ++ ' ' : x
-           else \x -> replace repl x cmdLine
+  let ui =
+        if useTUI
+        then runTUI
+        else runGUI "hClient"
+
+      template =
+        if null repl
+        then \x -> cmdLine ++ ' ' : x
+        else \x -> replace repl x cmdLine
+
+  return (ui, template)
 
   where
     options = info (helper <*> config)
@@ -46,7 +55,11 @@ cli = do
                 <> progDesc "Execs the command with args interactively"
                 <> header "hCLIent - GUI for CLI-commands!" )
     config = Config
-             <$> strOption
+             <$> flag False True
+             ( short 'T'
+               <> long "--tui"
+               <> help "use Text User Interface instead of GUI (Tk)" )
+             <*> strOption
              ( short 'I'
                <> metavar "STR"
                <> help ("substring of CMDLINE which will be replaced " ++
