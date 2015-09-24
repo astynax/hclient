@@ -1,4 +1,4 @@
-module Types (
+module Core (
   Output(..), Input, UI
   , Action(..), Controller(..), Result, ScrollTarget(..)
   , (<>)
