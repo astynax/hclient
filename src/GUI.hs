@@ -12,19 +12,21 @@ import           Core             hiding (perform)
 
 runGUI :: String -> [Action a] -> UI a
 runGUI title setup ctl = do
-  main <- initHTk [ text title
-                  , minSize (300, 100) ]
+  main <- initHTk [ text    title
+                  , minSize (300, 100)
+                  ]
 
   refState <- newIORef =<< initialize ctl
 
   let exit = readIORef refState >>= finalize ctl >> destroy main
 
-  entry           <- newEntry main [] :: IO (Entry String)
+  entry           <- newEntry  main [] :: IO (Entry String)
   (outFrame, out) <- newOutput main
 
-  pack entry    [ Fill X ]
-  pack outFrame [ Fill Both
-                , Expand On ]
+  pack entry    [ Fill   X ]
+  pack outFrame [ Fill   Both
+                , Expand On
+                ]
 
   let perform = mapM_ $ \case
         Write msg   -> writeTo out msg
@@ -42,10 +44,10 @@ runGUI title setup ctl = do
     $  onCtrlD  >>> exit
 
     +> onReturn >>> do
-      cmd <- getValue entry :: IO String
+      cmd      <- getValue entry :: IO String
 
       oldState <- readIORef refState
-      actions <- communicate ctl oldState cmd
+      actions  <- communicate ctl oldState cmd
 
       perform actions
 
@@ -61,17 +63,20 @@ runGUI title setup ctl = do
 
     newOutput :: Container a => a -> IO (Frame, Output (IO ()))
     newOutput cont = do
-      frame  <- newFrame     cont  []
-      sb     <- newScrollBar frame []
-      ed     <- newEditor    frame [ scrollbar Vertical sb
-                                   , wrap WordWrap
-                                   , width 10
-                                   , disable ]
-      pack ed [ Side AtLeft
-              , Fill Both
-              , Expand On ]
-      pack sb [ Side AtRight
-              , Fill Y ]
+      frame <- newFrame     cont  []
+      sb    <- newScrollBar frame []
+      ed    <- newEditor    frame [ scrollbar Vertical sb
+                                  , wrap      WordWrap
+                                  , width     10
+                                  , disable
+                                  ]
+      pack ed [ Side   AtLeft
+              , Fill   Both
+              , Expand On
+              ]
+      pack sb [ Side   AtRight
+              , Fill   Y
+              ]
 
       return ( frame
              , Output { writeTo = enabling ed

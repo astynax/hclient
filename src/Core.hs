@@ -1,10 +1,12 @@
 module Core (
   Output(..), Input, UI
   , Action(..), Controller(..), Result, ScrollTarget(..)
+
   , (<>)
   , quit, clear, setInput, setState
   , write, writeLn
   , scrollToBegin, scrollToEnd
+
   , State(finished, ctlState, uiState, uiInput)
   , state, perform, finish
   , modUIState, modCtlState
@@ -73,7 +75,9 @@ scrollToEnd   = [ScrollTo EndOfText]
 state :: a -> b -> State a b
 state = State False Nothing
 
-perform :: Output (State a b -> State a b) -> [Action b] -> State a b -> State a b
+perform :: Output (State a b -> State a b) -- output
+        -> [Action b]                      -- actions
+        -> State a b -> State a b          -- state transition
 perform out = flip (foldl apply)
   where
     apply s _ | finished s = s
@@ -83,16 +87,14 @@ perform out = flip (foldl apply)
         Write msg   -> writeTo out msg
         ClearOutput -> clearOutput out
         ScrollTo t  -> out `scrollTo` t
-        SetState x  -> \s' -> s' { ctlState = x }
-        SetInput x  -> \s' -> s' { uiInput = Just x }
+        SetState x  -> \s' -> s' { ctlState =      x }
+        SetInput x  -> \s' -> s' { uiInput  = Just x }
         Quit        -> error "This case should't be reached!"
       $ s
 
-modUIState :: (a -> a) -> State a b -> State a b
-modUIState f s = s { uiState = f (uiState s) }
-
+modUIState  :: (a -> a) -> State a b -> State a b
 modCtlState :: (b -> b) -> State a b -> State a b
+finish      ::             State a b -> State a b
+modUIState  f s = s { uiState  = f (uiState  s) }
 modCtlState f s = s { ctlState = f (ctlState s) }
-
-finish :: State a b -> State a b
-finish s = s { finished = True }
+finish        s = s { finished = True }
