@@ -5,6 +5,9 @@ module Core (
   , quit, clear, setInput, setState
   , write, writeLn
   , scrollToBegin, scrollToEnd
+  , State(), state, perform, finish, isFinished
+  , modUIState, modCtlState
+  , getUIInput, getUIState, getCtlState
   ) where
 
 import           Data.Monoid ((<>))
@@ -38,6 +41,16 @@ data Monad m => Controller m a =
                            -> m (Result a)  -- result
              }
 
+
+-- | Pure State
+data State a b = State { finished :: Bool
+                       , uiInput  :: Maybe String
+                       , uiState  :: a
+                       , ctlState :: b
+                       }
+
+-- | "Words" of the controller eDSL
+
 quit, clear :: Result a
 quit     = [Quit]
 clear    = [ClearOutput]
@@ -53,3 +66,45 @@ setState = (:[]) . SetState
 scrollToBegin, scrollToEnd :: Result a
 scrollToBegin = [ScrollTo BeginOfText]
 scrollToEnd   = [ScrollTo EndOfText]
+
+
+-- | Functions, helping to work with the pure state
+
+state :: a -> b -> State a b
+state = State False Nothing
+
+perform :: Output (State a b -> State a b) -> [Action b] -> State a b -> State a b
+perform out = flip (foldl apply)
+  where
+    apply s _ | finished s = s
+    apply s Quit           = finish s
+    apply s act            =
+      case act of
+        Write msg   -> writeTo out msg
+        ClearOutput -> clearOutput out
+        ScrollTo t  -> out `scrollTo` t
+        SetState x  -> \s' -> s' { ctlState = x }
+        SetInput x  -> \s' -> s' { uiInput = Just x }
+        Quit        -> error "This case should't be reached!"
+      $ s
+
+modUIState :: (a -> a) -> State a b -> State a b
+modUIState f s = s { uiState = f (uiState s) }
+
+modCtlState :: (b -> b) -> State a b -> State a b
+modCtlState f s = s { ctlState = f (ctlState s) }
+
+getUIInput :: State a b -> Maybe String
+getUIInput = uiInput
+
+getUIState :: State a b -> a
+getUIState = uiState
+
+getCtlState :: State a b -> b
+getCtlState = ctlState
+
+isFinished :: State a b -> Bool
+isFinished = finished
+
+finish :: State a b -> State a b
+finish s = s { finished = True }

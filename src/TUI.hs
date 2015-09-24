@@ -8,52 +8,38 @@ import           System.IO.Error (catchIOError, isEOFError)
 import           Core
 
 
-data TUIState  a = Run { buffer   :: String
-                       , ctlState :: a
-                       }
-                 | Stop a -- final state of Controller
+type TUIState a = State String a
 
 
 tuiOutput :: Output (TUIState a -> TUIState a)
-tuiOutput = Output { writeTo     = \msg s -> s { buffer = buffer s ++ msg }
-                   , clearOutput = \    s -> s { buffer = [] }
-                   , scrollTo    = \_   s -> s -- TUI can't scroll
+tuiOutput = Output { writeTo     = \msg -> modUIState (++ msg)
+                   , clearOutput =         modUIState (const [])
+                   , scrollTo    = const id -- TUI can't scroll
                    }
 
 
 runTUI :: Show a => [Action a] -> UI a
 runTUI setup ctl =
-  loop . perform setup . Run "" =<< initialize ctl
+  loop . perform tuiOutput setup . state "" =<< initialize ctl
   where
-    loop (Stop s) = finalize ctl s >> putStrLn "\nBye!"
-    loop s        = do
-      putStr (buffer s)
+    loop s
+      | isFinished s = finalize ctl (getCtlState s)
+                       >> putStrLn "\nBye!"
+      | otherwise = do
+        putStr (getUIState s)
 
-      let s' = s { buffer = [] }
+        let s' = modUIState (const []) s
 
-      mbInput <- getInput
+        mbInput <- getInput
 
-      loop =<< maybe
-        (return $ Stop $ ctlState s')
-        (\input -> do
-            actions <- communicate ctl (ctlState s') input
-            return $ perform actions s'
-        )
-        mbInput
+        loop =<< maybe
+          (return $ finish s')
+          (\input -> do
+              actions <- communicate ctl (getCtlState s') input
+              return $ perform tuiOutput actions s'
+          )
+          mbInput
 
-    perform = flip (foldl apply)
-      where
-        apply s@(Stop _) _    = s
-        apply s          Quit = Stop (ctlState s)
-        apply s          act  =
-          case act of
-            Write msg   -> writeTo tuiOutput msg
-            ClearOutput -> clearOutput tuiOutput
-            ScrollTo t  -> tuiOutput `scrollTo` t
-            SetState x  -> \s' -> s' { ctlState = x }
-            SetInput _  -> id -- TUI can't set the input
-            Quit        -> error "This case should't be reached!"
-          $ s
 
 getInput :: IO (Maybe String)
 getInput = catchIOError
