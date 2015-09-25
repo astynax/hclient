@@ -18,6 +18,18 @@ executable hecho
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
 
+executable hecho-tk
+  ghc-options:         -Wall -DTK_GUI
+  hs-source-dirs:      src
+  main-is:             Echo.hs
+  other-modules:       Core, GUI
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5,
+                       uni-htk,
+                       process,
+                       optparse-applicative,
+                       text
+
 executable hclient
   ghc-options:         -Wall -static -optl-static -optl-pthread
   hs-source-dirs:      src

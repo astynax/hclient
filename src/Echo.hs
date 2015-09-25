@@ -1,13 +1,25 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, CPP #-}
 
 module Main where
 
 import           Core
-import           TUI  -- GUI
+# ifdef TK_GUI
+import           GUI
+# else
+import           TUI
+# endif
 
 
 main :: IO ()
-main = runTUI (writeLn "Echo service is ready!") echo
+main =
+  let setup   = writeLn "Echo service is ready!"
+      runWith =
+# ifdef TK_GUI
+        runGUI "Echo"
+# else
+        runTUI
+# endif
+  in  runWith setup echo
 
 
 echo :: (Monad m) => Controller m Int
