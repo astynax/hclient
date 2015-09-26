@@ -6,7 +6,7 @@ license:             BSD3
 license-file:        LICENSE
 author:              astynax
 copyright:           2015 astynax
-category:            Web
+category:            UI,GUI
 build-type:          Simple
 cabal-version:       >=1.10
 
