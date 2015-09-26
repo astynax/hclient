@@ -5,9 +5,9 @@ import           Options.Applicative
 import           System.Process      (readCreateProcessWithExitCode, shell)
 import           System.Exit         (ExitCode(ExitSuccess))
 
-import           Core
-import           GUI
-import           TUI
+import           UI.Dialogui
+import           UI.Dialogui.HTk
+import           UI.Dialogui.TUI
 
 
 data Config = Config Bool String String

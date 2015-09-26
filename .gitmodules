@@ -1,0 +1,3 @@
+[submodule "dialogui"]
+	path = dialogui
+	url = git@github.com:astynax/dialogui.git

@@ -1,6 +1,7 @@
 flags: {}
 packages:
     - '.'
+    - dialogui
 extra-deps:
     - uni-htk-2.2.1.2
     - uni-events-2.2.2.0
