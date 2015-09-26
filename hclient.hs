@@ -57,7 +57,7 @@ cli = do
     config = Config
              <$> flag False True
              ( short 'T'
-               <> long "--tui"
+               <> long "tui"
                <> help "use Text User Interface instead of GUI (Tk)" )
              <*> strOption
              ( short 'I'
