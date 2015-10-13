@@ -1,3 +1,6 @@
 [submodule "dialogui"]
 	path = dialogui
 	url = git@github.com:astynax/dialogui.git
+[submodule "dialogui-htk"]
+	path = dialogui-htk
+	url = git@github.com:astynax/dialogui-htk.git
