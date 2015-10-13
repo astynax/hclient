@@ -16,7 +16,6 @@ executable hclient
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5,
                        dialogui,dialogui-htk,
-                       uni-htk,
                        process,
                        optparse-applicative,
                        text
