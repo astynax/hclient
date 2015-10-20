@@ -1,9 +1,12 @@
 module Main where
 
+import           Control.Monad       (void)
 import qualified Data.Text           as T
 import           Options.Applicative
 import           System.Process      (readCreateProcessWithExitCode, shell)
 import           System.Exit         (ExitCode(ExitSuccess))
+
+import           HTk.Toplevel.HTk    (text, size, configure)
 
 import           UI.Dialogui
 import           UI.Dialogui.HTk
@@ -38,7 +41,9 @@ cli = do
   let ui =
         if useTUI
         then runTUI
-        else runGUI "hClient"
+        else runGUIWith
+             $ defaultOptions { prepareWindow = set [ text "hClient" ]
+                              , prepareOutput = set [ size (80, 25) ] }
 
       template =
         if null repl
@@ -68,3 +73,5 @@ cli = do
 
     replace sub repl src =
       T.unpack $ T.replace (T.pack sub) (T.pack repl) (T.pack src)
+
+    set = (void .) . flip configure
