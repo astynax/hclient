@@ -1,8 +1,12 @@
 flags: {}
 packages:
     - '.'
-    - dialogui
-    - dialogui-htk
+    - location:
+        git: https://github.com/astynax/dialogui
+        commit: 09b5c628713c6ed9eea6fb745cd4ace9ffe25bce
+    - location:
+        git: https://github.com/astynax/dialogui-htk
+        commit: b1c69a0f43cc7bb6c3dc2c3f232a18a501d7bcab
 extra-deps:
     - uni-htk-2.2.1.2
     - uni-events-2.2.2.0
